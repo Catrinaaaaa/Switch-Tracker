@@ -1,4 +1,4 @@
-package com.example.pk_switcher
+package com.mlem.switch_tracker
 
 import io.flutter.embedding.android.FlutterActivity
 
