@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:pk_switcher/main.dart';
+import 'package:switch_tracker/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'pluralkit.dart';
 
-const _repo = 'https://github.com/starshine-sys/pk-switcher/';
+const _repo = 'https://github.com/Catrinaaaaa/Switch-Tracker';
 const _license =
     'https://github.com/starshine-sys/pk-switcher/blob/main/LICENSE';
 
@@ -22,6 +22,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _showImages;
   late bool _showHidden;
   late bool _darkTheme;
+  late bool _amoledTheme;
+  late bool _materialYou;
   late String _token;
 
   var _validToken = true;
@@ -32,9 +34,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _materialYou = widget.prefs.getBool('materialYou') ?? false;
     _showImages = widget.prefs.getBool('showImages') ?? true;
     _showHidden = widget.prefs.getBool('showHidden') ?? true;
     _darkTheme = widget.prefs.getBool('darkTheme') ?? false;
+    _amoledTheme = widget.prefs.getBool('amoledTheme') ?? false;
     _token = widget.prefs.getString('token')!;
     _tokenController.text = _token;
   }
@@ -68,6 +72,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
           SwitchListTile(
+            value: _materialYou,
+            onChanged: (value) {
+              setState(() {
+                _hasChangedSettings = true;
+                _materialYou = value;
+              });
+            },
+            title: const Text('Material You theme'),
+            subtitle: const Text(
+              'Use colours based on your Android wallpaper',
+            ),
+          ),
+          SwitchListTile(
             value: _showHidden,
             onChanged: (value) {
               setState(() {
@@ -78,6 +95,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Show private members'),
             subtitle: const Text(
                 "Whether to show private members in the full member list"),
+          ),
+          SwitchListTile(
+            value: _amoledTheme,
+            onChanged: (value) {
+              setState(() {
+                _hasChangedSettings = true;
+                _amoledTheme = value;
+              });
+            },
+            title: const Text('AMOLED theme'),
+            subtitle: const Text('Use true black in dark mode'),
           ),
           const Divider(),
           const Padding(
@@ -137,14 +165,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _onSave(BuildContext context) async {
+    await widget.prefs.setBool('materialYou', _materialYou);
     await widget.prefs.setBool('showHidden', _showHidden);
     await widget.prefs.setBool('showImages', _showImages);
     await widget.prefs.setString('token', _token);
     await widget.prefs.setBool('darkTheme', _darkTheme);
+    await widget.prefs.setBool('amoledTheme', _amoledTheme);
 
     setState(() => _hasChangedSettings = false);
 
     PKSwitcher.of(context)?.changeTheme(_darkTheme);
+    PKSwitcher.of(context)?.changeMaterialYou(_materialYou);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Saved settings!')),

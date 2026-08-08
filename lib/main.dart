@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 import 'main_view.dart';
 import 'member_view.dart';
@@ -30,6 +31,8 @@ class PKSwitcher extends StatefulWidget {
 class _PKSwitcherState extends State<PKSwitcher> {
   var _hadNoToken = false;
   var _darkTheme = false;
+  var _amoledTheme = false;
+  var _materialYou = false;
 
   void _exitWelcome() => setState(() {
         _hadNoToken = false;
@@ -41,10 +44,24 @@ class _PKSwitcherState extends State<PKSwitcher> {
     });
   }
 
+  void changeAmoledTheme(bool amoledTheme) {
+    setState(() {
+      _amoledTheme = amoledTheme;
+    });
+  }
+
+  void changeMaterialYou(bool materialYou) {
+    setState(() {
+      _materialYou = materialYou;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasToken = widget.prefs.getString('token') != null;
     _darkTheme = widget.prefs.getBool('darkTheme') ?? false;
+    _amoledTheme = widget.prefs.getBool('amoledTheme') ?? false;
+    _materialYou = widget.prefs.getBool('materialYou') ?? false;
 
     Widget root = DefaultTabController(
       length: 4,
@@ -84,25 +101,83 @@ class _PKSwitcherState extends State<PKSwitcher> {
       );
     }
 
-    return MaterialApp(
-        title: 'PluralKit Switcher',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-          ),
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: Colors.grey,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-          ),
-        ),
-        themeMode: _darkTheme ? ThemeMode.dark : ThemeMode.light,
-        home: root);
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        final lightScheme = _materialYou
+            ? (lightDynamic ??
+                ColorScheme.fromSeed(
+                  seedColor: Colors.blue,
+                  brightness: Brightness.light,
+                ))
+            : null;
+
+        final darkScheme = _materialYou
+            ? (darkDynamic ??
+                ColorScheme.fromSeed(
+                  seedColor: Colors.blue,
+                  brightness: Brightness.dark,
+                ))
+            : null;
+        return MaterialApp(
+            title: 'Switch Tracker',
+            theme: _materialYou
+                ? ThemeData(
+                    useMaterial3: true,
+                    colorScheme: lightScheme,
+                    appBarTheme: const AppBarTheme(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                    ),
+                  )
+                : ThemeData(
+                    primarySwatch: Colors.blue,
+                    appBarTheme: const AppBarTheme(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+            darkTheme: _materialYou
+                ? ThemeData(
+                    useMaterial3: true,
+                    colorScheme: _amoledTheme
+                        ? darkScheme!.copyWith(
+                            surface: Colors.black,
+                            surfaceTint: Colors.transparent,
+                          )
+                        : darkScheme,
+                    scaffoldBackgroundColor: _amoledTheme ? Colors.black : null,
+                    canvasColor: _amoledTheme ? Colors.black : null,
+                    cardColor: _amoledTheme ? const Color(0xFF101010) : null,
+                    appBarTheme: AppBarTheme(
+                      backgroundColor: _amoledTheme ? Colors.black : null,
+                      foregroundColor: Colors.white,
+                      surfaceTintColor: Colors.transparent,
+                    ),
+                  )
+                : _amoledTheme
+                    ? ThemeData(
+                        brightness: Brightness.dark,
+                        scaffoldBackgroundColor: Colors.black,
+                        canvasColor: Colors.black,
+                        cardColor: const Color(0xFF101010),
+                        appBarTheme: const AppBarTheme(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          surfaceTintColor: Colors.transparent,
+                        ),
+                      )
+                    : ThemeData(
+                        brightness: Brightness.dark,
+                        primarySwatch: Colors.grey,
+                        appBarTheme: const AppBarTheme(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+            themeMode: _darkTheme ? ThemeMode.dark : ThemeMode.light,
+            home: root);
+      },
+    );
   }
 }
 
