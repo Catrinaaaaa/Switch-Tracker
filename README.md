@@ -1,8 +1,6 @@
 # PluralKit Switcher
 
-Mobile app (web and native) for managing PluralKit switches.
-
-**Web version:** https://starshine-sys.github.io/pk-switcher/
+Mobile app for managing PluralKit switches.
 
 ## Screenshots
 
