@@ -6,23 +6,29 @@ import 'main_view.dart';
 import 'member_view.dart';
 import 'settings_view.dart';
 import 'switch_view.dart';
-
 import 'pluralkit.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
-  runApp(PKSwitcher(prefs: prefs));
+
+  runApp(
+    PKSwitcher(prefs: prefs),
+  );
 }
 
 class PKSwitcher extends StatefulWidget {
   final SharedPreferences prefs;
 
-  const PKSwitcher({Key? key, required this.prefs}) : super(key: key);
+  const PKSwitcher({
+    Key? key,
+    required this.prefs,
+  }) : super(key: key);
 
-  static _PKSwitcherState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_PKSwitcherState>();
+  static _PKSwitcherState? of(BuildContext context) {
+    return context.findAncestorStateOfType<_PKSwitcherState>();
+  }
 
   @override
   _PKSwitcherState createState() => _PKSwitcherState();
@@ -34,9 +40,11 @@ class _PKSwitcherState extends State<PKSwitcher> {
   var _amoledTheme = false;
   var _materialYou = false;
 
-  void _exitWelcome() => setState(() {
-        _hadNoToken = false;
-      });
+  void _exitWelcome() {
+    setState(() {
+      _hadNoToken = false;
+    });
+  }
 
   void changeTheme(bool darkTheme) {
     setState(() {
@@ -59,6 +67,7 @@ class _PKSwitcherState extends State<PKSwitcher> {
   @override
   Widget build(BuildContext context) {
     final hasToken = widget.prefs.getString('token') != null;
+
     _darkTheme = widget.prefs.getBool('darkTheme') ?? false;
     _amoledTheme = widget.prefs.getBool('amoledTheme') ?? false;
     _materialYou = widget.prefs.getBool('materialYou') ?? false;
@@ -73,25 +82,44 @@ class _PKSwitcherState extends State<PKSwitcher> {
             labelColor: _darkTheme ? Colors.white : Colors.black,
             indicatorColor: _darkTheme ? Colors.white : Colors.black,
             tabs: const [
-              Tab(icon: Icon(Icons.account_circle), text: 'Fronters'),
-              Tab(icon: Icon(Icons.list), text: 'Members'),
-              Tab(icon: Icon(Icons.history), text: 'History'),
-              Tab(icon: Icon(Icons.settings), text: 'Settings'),
+              Tab(
+                icon: Icon(Icons.account_circle),
+                text: 'Fronters',
+              ),
+              Tab(
+                icon: Icon(Icons.list),
+                text: 'Members',
+              ),
+              Tab(
+                icon: Icon(Icons.history),
+                text: 'History',
+              ),
+              Tab(
+                icon: Icon(Icons.settings),
+                text: 'Settings',
+              ),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            CurrentFronterPage(prefs: widget.prefs),
-            MemberList(prefs: widget.prefs),
-            SwitchList(prefs: widget.prefs),
-            SettingsScreen(prefs: widget.prefs),
+            CurrentFronterPage(
+              prefs: widget.prefs,
+            ),
+            MemberList(
+              prefs: widget.prefs,
+            ),
+            SwitchList(
+              prefs: widget.prefs,
+            ),
+            SettingsScreen(
+              prefs: widget.prefs,
+            ),
           ],
         ),
       ),
     );
 
-    // if no token is set, show welcome screen instead
     if (!hasToken || _hadNoToken) {
       _hadNoToken = true;
 
@@ -103,79 +131,81 @@ class _PKSwitcherState extends State<PKSwitcher> {
 
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
-        final lightScheme = _materialYou
-            ? (lightDynamic ??
-                ColorScheme.fromSeed(
-                  seedColor: Colors.blue,
-                  brightness: Brightness.light,
-                ))
-            : null;
+        final lightScheme = lightDynamic ??
+            ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+              brightness: Brightness.light,
+            );
 
-        final darkScheme = _materialYou
-            ? (darkDynamic ??
-                ColorScheme.fromSeed(
-                  seedColor: Colors.blue,
-                  brightness: Brightness.dark,
-                ))
-            : null;
-        return MaterialApp(
-            title: 'Switch Tracker',
-            theme: _materialYou
+        final darkScheme = darkDynamic ??
+            ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+              brightness: Brightness.dark,
+            );
+
+        final lightTheme = _materialYou
+            ? ThemeData(
+                useMaterial3: true,
+                colorScheme: lightScheme,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                ),
+              )
+            : ThemeData(
+                primarySwatch: Colors.blue,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                ),
+              );
+
+        final darkTheme = _materialYou
+            ? ThemeData(
+                useMaterial3: true,
+                colorScheme: _amoledTheme
+                    ? darkScheme.copyWith(
+                        surface: Colors.black,
+                        surfaceTint: Colors.transparent,
+                      )
+                    : darkScheme,
+                scaffoldBackgroundColor: _amoledTheme ? Colors.black : null,
+                canvasColor: _amoledTheme ? Colors.black : null,
+                cardColor: _amoledTheme ? const Color(0xFF101010) : null,
+                appBarTheme: AppBarTheme(
+                  backgroundColor: _amoledTheme ? Colors.black : null,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                ),
+              )
+            : _amoledTheme
                 ? ThemeData(
-                    useMaterial3: true,
-                    colorScheme: lightScheme,
+                    brightness: Brightness.dark,
+                    scaffoldBackgroundColor: Colors.black,
+                    canvasColor: Colors.black,
+                    cardColor: const Color(0xFF101010),
                     appBarTheme: const AppBarTheme(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                    ),
-                  )
-                : ThemeData(
-                    primarySwatch: Colors.blue,
-                    appBarTheme: const AppBarTheme(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                    ),
-                  ),
-            darkTheme: _materialYou
-                ? ThemeData(
-                    useMaterial3: true,
-                    colorScheme: _amoledTheme
-                        ? darkScheme!.copyWith(
-                            surface: Colors.black,
-                            surfaceTint: Colors.transparent,
-                          )
-                        : darkScheme,
-                    scaffoldBackgroundColor: _amoledTheme ? Colors.black : null,
-                    canvasColor: _amoledTheme ? Colors.black : null,
-                    cardColor: _amoledTheme ? const Color(0xFF101010) : null,
-                    appBarTheme: AppBarTheme(
-                      backgroundColor: _amoledTheme ? Colors.black : null,
+                      backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                       surfaceTintColor: Colors.transparent,
                     ),
                   )
-                : _amoledTheme
-                    ? ThemeData(
-                        brightness: Brightness.dark,
-                        scaffoldBackgroundColor: Colors.black,
-                        canvasColor: Colors.black,
-                        cardColor: const Color(0xFF101010),
-                        appBarTheme: const AppBarTheme(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          surfaceTintColor: Colors.transparent,
-                        ),
-                      )
-                    : ThemeData(
-                        brightness: Brightness.dark,
-                        primarySwatch: Colors.grey,
-                        appBarTheme: const AppBarTheme(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-            themeMode: _darkTheme ? ThemeMode.dark : ThemeMode.light,
-            home: root);
+                : ThemeData(
+                    brightness: Brightness.dark,
+                    primarySwatch: Colors.grey,
+                    appBarTheme: const AppBarTheme(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                  );
+
+        return MaterialApp(
+          title: 'Switch Tracker',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: _darkTheme ? ThemeMode.dark : ThemeMode.light,
+          home: root,
+        );
       },
     );
   }
@@ -197,9 +227,108 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   var _validToken = false;
+  var _loggingIn = false;
 
   var _showImages = true;
   var _showHidden = true;
+
+  final _tokenController = TextEditingController();
+
+  @override
+  void dispose() {
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    final token = _tokenController.text.trim();
+
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your token first.'),
+        ),
+      );
+
+      return;
+    }
+
+    setState(() {
+      _loggingIn = true;
+    });
+
+    try {
+      final response = await getFronters(token).timeout(
+        const Duration(seconds: 15),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (response == null) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Invalid token'),
+              content: const Text(
+                "The token you provided doesn't seem to be valid. "
+                'Please try again.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }
+
+      await widget.prefs.setString('token', token);
+      await widget.prefs.setBool('showImages', _showImages);
+      await widget.prefs.setBool('showHidden', _showHidden);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _validToken = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Login successful. Press the green save button.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login failed: $error'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loggingIn = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,42 +342,76 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           const ListTile(
             title: Text('Set up'),
             subtitle: Text(
-                'Get your system token with the "pk;token" command, then paste it here.'),
+              'Get your system token with the "pk;token" command, '
+              'then paste it here.',
+            ),
           ),
           const Divider(),
           TextField(
+            controller: _tokenController,
             decoration: const InputDecoration(
               labelText: 'Token',
               icon: Icon(Icons.password),
             ),
-            enabled: !_validToken,
-            onSubmitted: (token) async => _onTokenSubmit(context, token),
+            enabled: !_validToken && !_loggingIn,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) {
+              _login();
+            },
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _validToken || _loggingIn ? null : _login,
+              child: _loggingIn
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      _validToken ? 'Logged in' : 'Log in',
+                    ),
+            ),
           ),
           const Divider(),
           SwitchListTile(
             value: _showImages,
             onChanged: (value) async {
-              await widget.prefs.setBool('showImages', value);
+              await widget.prefs.setBool(
+                'showImages',
+                value,
+              );
+
               setState(() {
                 _showImages = value;
               });
             },
             title: const Text('Show member avatars'),
             subtitle: const Text(
-                "Whether to show members' avatars in the member list"),
+              "Whether to show members' avatars in the member list",
+            ),
           ),
           const Divider(),
           SwitchListTile(
             value: _showHidden,
             onChanged: (value) async {
-              await widget.prefs.setBool('showHidden', value);
+              await widget.prefs.setBool(
+                'showHidden',
+                value,
+              );
+
               setState(() {
                 _showHidden = value;
               });
             },
             title: const Text('Show private members'),
             subtitle: const Text(
-                "Whether to show private members in the full member list"),
+              'Whether to show private members in the full member list',
+            ),
           ),
         ],
       ),
@@ -256,41 +419,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ? FloatingActionButton(
               onPressed: widget.exit,
               backgroundColor: Colors.green,
-              child: const Icon(Icons.save),
               tooltip: 'Save settings',
+              child: const Icon(Icons.save),
             )
           : null,
     );
-  }
-
-  Future<void> _onTokenSubmit(BuildContext context, String token) async {
-    final resp = await getFronters(token);
-    if (resp == null) {
-      return await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Invalid token'),
-            content: const Text(
-                "The token you provided doesn't seem to be valid. Please try again."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    // otherwise, token is valid
-    await widget.prefs.setString('token', token);
-    setState(() {
-      _validToken = true;
-    });
   }
 }
