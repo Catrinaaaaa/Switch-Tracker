@@ -100,5 +100,3 @@ class _CurrentFronterPageState extends State<CurrentFronterPage> {
     );
   }
 }
-
-
