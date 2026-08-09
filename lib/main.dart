@@ -6,6 +6,7 @@ import 'main_view.dart';
 import 'member_view.dart';
 import 'settings_view.dart';
 import 'switch_view.dart';
+import 'message_view.dart';
 import 'pluralkit.dart';
 
 Future<void> main() async {
@@ -73,12 +74,13 @@ class _PKSwitcherState extends State<PKSwitcher> {
     _materialYou = widget.prefs.getBool('materialYou') ?? false;
 
     Widget root = DefaultTabController(
-      length: 4,
-      initialIndex: hasToken ? 0 : 3,
+      length: 5,
+      initialIndex: hasToken ? 0 : 4,
       child: Scaffold(
         bottomNavigationBar: Container(
           color: _darkTheme ? Colors.black : Colors.white,
           child: TabBar(
+            isScrollable: true,
             labelColor: _darkTheme ? Colors.white : Colors.black,
             indicatorColor: _darkTheme ? Colors.white : Colors.black,
             tabs: const [
@@ -93,6 +95,10 @@ class _PKSwitcherState extends State<PKSwitcher> {
               Tab(
                 icon: Icon(Icons.history),
                 text: 'History',
+              ),
+              Tab(
+                icon: Icon(Icons.chat),
+                text: 'Chats',
               ),
               Tab(
                 icon: Icon(Icons.settings),
@@ -110,6 +116,9 @@ class _PKSwitcherState extends State<PKSwitcher> {
               prefs: widget.prefs,
             ),
             SwitchList(
+              prefs: widget.prefs,
+            ),
+            ChatListScreen(
               prefs: widget.prefs,
             ),
             SettingsScreen(
