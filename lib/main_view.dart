@@ -18,7 +18,7 @@ class _CurrentFronterPageState extends State<CurrentFronterPage> {
   static final tsFormat = DateFormat.yMMMMEEEEd().add_jms();
 
   late Future<Front?> _future;
-  var _oneFronter = false;
+  final _oneFronter = false;
 
   Widget _buildFrontList(Front front) {
     final duration = DateTime.now().difference(front.timestamp);
